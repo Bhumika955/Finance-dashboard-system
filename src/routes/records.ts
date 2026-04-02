@@ -9,7 +9,12 @@ const router = Router();
 // Filters: type, category, date_from, date_to
 router.get('/', requireAuth, requireRole('viewer', 'analyst', 'admin'), (req: AuthRequest, res: Response): void => {
   try {
-    const { type, category, date_from, date_to } = req.query;
+    const { type, category, date_from, date_to, search, page, limit } = req.query;
+
+    // Pagination
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const offset = (pageNum - 1) * limitNum;
 
     let query = 'SELECT * FROM financial_records WHERE deleted_at IS NULL';
     const params: any[] = [];
@@ -30,16 +35,33 @@ router.get('/', requireAuth, requireRole('viewer', 'analyst', 'admin'), (req: Au
       query += ' AND date <= ?';
       params.push(date_to);
     }
+    if (search) {
+      query += ' AND (category LIKE ? OR notes LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
 
-    query += ' ORDER BY date DESC';
+    // Total count for pagination info
+    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
+    const { total } = db.prepare(countQuery).get(...params) as any;
+
+    query += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+    params.push(limitNum, offset);
 
     const records = db.prepare(query).all(...params);
-    res.json(records);
-  } catch {
+
+    res.json({
+      data: records,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        total_pages: Math.ceil(total / limitNum)
+      }
+    });
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch records' });
   }
 });
-
 // Get single record
 router.get('/:id', requireAuth, requireRole('viewer', 'analyst', 'admin'), (req: AuthRequest, res: Response): void => {
   try {
