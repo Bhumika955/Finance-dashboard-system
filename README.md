@@ -11,8 +11,8 @@ A role-based finance dashboard backend built with Node.js, TypeScript, Express, 
 
 ## Setup
 ```bash
-git clone <your-repo-url>
-cd finance-dashboard
+git clone https://github.com/Bhumika955/Finance-dashboard-system
+cd finance-dashboard-system
 npm install
 ```
 
