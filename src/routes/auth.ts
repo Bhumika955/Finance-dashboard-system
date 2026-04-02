@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db/database';
-
+import { requireAuth, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 // Register
@@ -81,5 +81,20 @@ router.post('/login', (req: Request, res: Response): void => {
     res.status(500).json({ error: 'Login failed' });
   }
 });
+router.get('/me', requireAuth, (req: AuthRequest, res: Response): void => {
+  try {
+    const user = db.prepare(
+      'SELECT id, name, email, role, is_active, created_at FROM users WHERE id = ?'
+    ).get(req.user!.id) as any;
 
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json(user);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
 export default router;
