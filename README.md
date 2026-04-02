@@ -42,10 +42,11 @@ npm run dev
 ## API Endpoints
 
 ### Auth
-| Method | Endpoint      | Description             |
-|--------|---------------|-------------------------|
-| POST   | /auth/register| Register new user       |
-| POST   | /auth/login   | Login and get JWT token |
+| Method | Endpoint       | Description               |
+|--------|----------------|---------------------------|
+| POST   | /auth/register | Register new user         |
+| POST   | /auth/login    | Login and get JWT token   |
+| GET    | /auth/me       | Get logged-in user profile| 
 
 ### Users (Admin only)
 | Method | Endpoint         | Description             |
@@ -71,6 +72,8 @@ npm run dev
 ?type=expense
 ?category=salary
 ?date_from=2024-04-01&date_to=2024-04-30
+?search=food
+?page=1&limit=10
 ```
 
 ### Dashboard
